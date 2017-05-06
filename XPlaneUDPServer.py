@@ -14,11 +14,11 @@ from struct import *
 # Simple Example:
 #
 # @code
-# import XPlaneUDPServer
-# XPlaneDataDispatcher = XPlaneUDPServer.XPlaneUDPServer(("127.0.0.1",49005))	#create an instance of the class, listening for data on IP 127.0.0.1 and port 49005. configure the same in XPlane
-# XPlaneDataDispatcher.start()
+# import XPlaneUDPServer as XPUDP
+# XPUDP.pyXPUDPServer.initialiseUDP(('127.0.0.1',49008), ('192.168.1.1',49000), 'MYPC')
+# XPUDP.pyXPUDPServer.start()
 #
-# value = XPlaneDataDispatcher.dataList[17][3] 	# read the value sent by XPlane for datagroup 17, position 4 (mag heading)
+# value = XPUDP.pyXPUDPServer.getData((17,3)) 	# read the value sent by XPlane for datagroup 17, position 4 (mag heading)
 # @endcode
 #
 
