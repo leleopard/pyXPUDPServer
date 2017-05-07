@@ -4,21 +4,23 @@ import logging
 import time
 from struct import *
 
-## @brief Server Thread class that listens to UDP data packets from X Plane, and parses them into an internal list.
+## @brief Server Thread class that allows to send and receive datarefs, commands to X Plane over UDP.
 # @brief The class can also be configured to act as a relay to forward XPLane UDP packets to other devices on the network, or act as a concentrator and pass UDP packets from other network devices to XPlane 
-# The IP address and UDP port the class listens on are passed in the constructor
-# This same IP and port have to be configured in the 'IP for Data Output' section of the 'Data' tab in 
-# XPlanes 'Net Connections' settings
-#
+# when importing the module, an instance of the class is created called pyXPUDPServer. 
+# This instance needs to be initialised by calling the initialiseUDP() method, and the thread can be started by calling start() 
+# 
 # The class is inherited from the Threading module, and will run as its own thread when started
 # Simple Example:
 #
 # @code
-# import XPlaneUDPServer
-# XPlaneDataDispatcher = XPlaneUDPServer.XPlaneUDPServer(("127.0.0.1",49005))	#create an instance of the class, listening for data on IP 127.0.0.1 and port 49005. configure the same in XPlane
-# XPlaneDataDispatcher.start()
+# import XPlaneUDPServer as XPUDP
+# XPUDP.pyXPUDPServer.initialiseUDP(('127.0.0.1',49008), ('192.168.1.1',49000), 'MYPC') 
+# # where ('127.0.0.1',49008) is the IP and port this class is listening on (configure in the Net connections in XPlane)
+# # and ('192.168.1.1',49000) is the IP and port of XPlane
+# # 'MYPC' is the name of the computer XPlane is running on
+# XPUDP.pyXPUDPServer.start()
 #
-# value = XPlaneDataDispatcher.dataList[17][3] 	# read the value sent by XPlane for datagroup 17, position 4 (mag heading)
+# value = XPUDP.pyXPUDPServer.getData((17,3)) 	# read the value sent by XPlane for datagroup 17, position 4 (mag heading)
 # @endcode
 #
 
@@ -33,6 +35,7 @@ class XPlaneUDPServer(threading.Thread):
 		threading.Thread.__init__(self)
 		self.running = True
 		self.updatingRREFdict = False
+		self.statusMsg = "Not connected"
 		
 		self.XPbeacon = {
 			'beacon_major_version'	: None,
@@ -270,6 +273,7 @@ class XPlaneUDPServer(threading.Thread):
 					if self.XPalive == False: # if xplane was down it is now back up again, lets try and re subscribe the datarefs
 						self.__resubscribeRREFs()
 					self.XPalive = True
+					self.statusMsg = "Connected to XPlane running on computer: "+self.XPComputerName 
 							
 			except socket.error as msg: pass
 			
@@ -277,7 +281,8 @@ class XPlaneUDPServer(threading.Thread):
 			if elapsed_time_since_beacon_rcvd >= 2.5: #we have not received data from Xplane for a while
 				logging.info("Not received XPlane beacon for %s seconds", elapsed_time_since_beacon_rcvd)
 				self.XPalive = False
-				
+				self.statusMsg = "Not connected to XPlane, last message received "+str(elapsed_time_since_beacon_rcvd)+"seconds ago"
+					
 			try:
 				#print ("xp server atttempt to receive data...")
 				data, addr = self.XplaneRCVsock.recvfrom(8192) # receive data from XPlane
