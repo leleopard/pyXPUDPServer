@@ -1,3 +1,8 @@
+## This software is licensed under the MIT License - please refer to the LICENCE file for details
+#
+# Copyright (c) 2017 Stephane Teisserenc
+#
+
 import sys, threading
 import socket
 import logging
