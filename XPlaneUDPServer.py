@@ -3,6 +3,7 @@ import socket
 import logging
 import time
 from struct import *
+import xml.etree.ElementTree as ET
 
 ## @brief Server Thread class that allows to send and receive datarefs, commands to X Plane over UDP.
 # @brief The class can also be configured to act as a relay to forward XPLane UDP packets to other devices on the network, or act as a concentrator and pass UDP packets from other network devices to XPlane 
@@ -71,31 +72,88 @@ class XPlaneUDPServer(threading.Thread):
 		self.cmddata = None
 		for i in range(0,1024) :
 			self.dataList.append([0,0,0,0,0,0,0,0]) # initialise the dataList with 0 values
+			
+		self.continuousXPCommandsQueue = []
+		
 
 	## Initialise the UDP sockets to communicate with XPlane
-	# @param Address: tuple of IP address, UDP port we are listening on
-	# @param XPAddress: tuple of IP address, UDP port for XPlane
+	# @param Address: tuple of IP address (str), UDP port (int) we are listening on
+	# @param XPAddress: tuple of IP address (str), UDP port (int) for XPlane
 	# @param XPComputerName: Network name of the computer XPlane is running on
 	#
 	def initialiseUDP(self, Address, XPAddress, XPComputerName):
 		logging.info("Initialising XPlaneUDPServer on address: %s", Address)
 		# socket listening to XPlane Data
-		self.XplaneRCVsock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-		self.XplaneRCVsock.setblocking(0)
-		self.XplaneRCVsock.bind(Address) # bind this socket to listen to traffic from XPlane on the address passed to the constructor
-		self.XPAddress = XPAddress
-		self.XPComputerName = XPComputerName
-		self.XPalive = True
+		try:
+			self.XplaneRCVsock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+			self.XplaneRCVsock.setblocking(0)
+			self.XplaneRCVsock.bind(Address) # bind this socket to listen to traffic from XPlane on the address passed to the constructor
+			self.XPAddress = XPAddress
+			self.XPComputerName = XPComputerName
+			self.XPalive = True
+			
+			self.mcast_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+			self.mcast_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+			self.mcast_sock.bind(('', self.MCAST_PORT))  # use MCAST_GRP instead of '' to listen only
+													# to MCAST_GRP, not all groups on MCAST_PORT
+			mreq = pack("4sl", socket.inet_aton(self.MCAST_GRP), socket.INADDR_ANY)
+			
+			self.mcast_sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
+			self.mcast_sock.setblocking(0)
+		except:
+			logging.error('Error while starting UDP server', exc_info=True)
+	
+	## Initialise the UDP sockets to communicate with XPlane
+	# @param XMLConfigFile: relative path to XML config file
+	#
+	def initialiseUDPXMLConfig(self, XMLConfigFile):
+		self.ardXMLconfigFile = 'UDPSettings.xml'
+		self.tree = ET.parse(self.ardXMLconfigFile)
+		self.root = self.tree.getroot()
 		
-		self.mcast_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
-		self.mcast_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-		self.mcast_sock.bind(('', self.MCAST_PORT))  # use MCAST_GRP instead of '' to listen only
-												# to MCAST_GRP, not all groups on MCAST_PORT
-		mreq = pack("4sl", socket.inet_aton(self.MCAST_GRP), socket.INADDR_ANY)
+		IPTag = self.root.findall(".//IP")
+		XPIPTag = self.root.findall(".//XPIP")
+		XPCompNameTag = self.root.findall(".//XPComputerName")
+		RedirectUDPtrafficTag = self.root.findall(".//RedirectUDPtraffic")
 		
-		self.mcast_sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
-		self.mcast_sock.setblocking(0)
-		
+		try:
+			Address = (IPTag[0].attrib['address'], int(IPTag[0].attrib['port']))
+			XPAddress = (XPIPTag[0].attrib['address'], int(XPIPTag[0].attrib['port']))
+			XPComputerName = XPCompNameTag[0].attrib['network_name']
+			
+			self.initialiseUDP( Address, XPAddress, XPComputerName)
+			
+			state = RedirectUDPtrafficTag[0].attrib['state']
+			if state == 'True':
+				pass#self.XP_RedirectTraffic_checkBox.setChecked(True)
+			
+		except:
+			logging.error('error while retrieving xml data', exc_info=True)
+	
+	## Enables the redirection of traffic received by the class to XPlane
+	# @param myAddress: The address the class is listening for traffic on. Format: (IP,port)
+	# @param XPAddress: The XP address we will be forwarding the packets to. Format: (IP, port)
+	#
+	def enableRedirectUDPtoXP(self, myAddress, XPAddress):
+		try:
+			self.RDRCT_TRAFFIC = True
+			self.XPAddress = XPAddress
+			self.DataRCVsock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+			self.DataRCVsock.setblocking(0)
+			self.DataRCVsock.bind(myAddress)
+		except:
+			self.RDRCT_TRAFFIC = False
+			logging.error('Error opening redirection socket ', exc_info=True )
+			
+	## Disables the redirection of traffic received by the class to XPlane
+	# 
+	def disableRedirectUDPtoXP(self):
+		self.RDRCT_TRAFFIC = False
+		try:
+			self.DataRCVsock.close()
+		except:
+			logging.error('Error closing redirect socket ', exc_info=True )
+	
 	## Enables the forwarding of data received from XPLane to a list of IP addresses
 	# @param forwardAddresses: a list of addresses to forward to, in the format [(IP1,port1),(IP2,port2), ... ]
 	#
@@ -104,7 +162,7 @@ class XPlaneUDPServer(threading.Thread):
 
 	## Returns data last received from XPlane for the key, index provided. 
 	# @param dataReference: This can be either a tuple if requesting data set up in the Data Input&Output screen in XPlane, or a string if requesting data from a dataref. The method will automatically request XP to send the dataref if it has not been done previously. 
-	#
+	#	getData("sim/cockpit2/radios/actuators/transponder_mode[0]")
 	def getData(self,dataReference):
 		strobject = str
 		if PYTHON_VERSION == 2: strobject = basestring 
@@ -118,9 +176,9 @@ class XPlaneUDPServer(threading.Thread):
 		elif isinstance(dataReference, strobject): # then we have a dataref - this works with python 3 only. 
 			if dataReference in self.datarefsDict: # that dataref has already been requested so return the value
 				return self.datarefsDict[dataReference]
-				print(self.datarefsDict)
+				logging.debug(self.datarefsDict)
 			else: # this dataref has not been requested so let's request it, and return 0.0 for this time
-				print("dataref not previously requested %s", dataReference)
+				#logging.debug("dataref not previously requested %s", dataReference)
 				self.requestXPDref(dataReference)
 				return 0.0
 		
@@ -146,10 +204,10 @@ class XPlaneUDPServer(threading.Thread):
 		
 		if self.XPAddress is not None: # check if we have XPlane's IP, if so continue, else log an error 
 			if dataref in self.datarefsDict: #  if the dataref has already been requested, then return, no need to do anything
-				logging.info("dataref has already been requested")
+				logging.debug("dataref has already been requested")
 				return 
 			else: 
-				logging.info("Requesting dataref %s", dataref)
+				logging.debug("Requesting dataref %s", dataref)
 				self.datarefsDict[dataref] = 0.0	# initialise a new key for this dataref
 				index = len(self.datarefsDict)-1	# give it an index
 				self.datarefsIndices[index] = ['',None]
@@ -159,8 +217,8 @@ class XPlaneUDPServer(threading.Thread):
 				#RREF_Sock.setblocking(0)
 				self.datarefsIndices[index][1] = RREF_Sock
 				
-				logging.info("datarefs Dict: %s", self.datarefsDict)
-				logging.info("datarefs Indices: %s", self.datarefsIndices)
+				logging.debug("datarefs Dict: %s", self.datarefsDict)
+				logging.debug("datarefs Indices: %s", self.datarefsIndices)
 				
 				self.RREF_sockets.append(RREF_Sock)
 				
@@ -173,7 +231,6 @@ class XPlaneUDPServer(threading.Thread):
 		if self.XPAddress is not None:
 			dataref = self.datarefsIndices[index][0]
 			
-			print ("***** ENTERING __sendRREFmessage ********")
 			dataref+= '\0'
 			nr_trailing_spaces = 400-len(dataref)
 			
@@ -185,7 +242,7 @@ class XPlaneUDPServer(threading.Thread):
 			msg += dataref
 			msg += ' '*nr_trailing_spaces
 			
-			logging.info("Requesting DataRef, RREF msg: %s", msg)
+			logging.debug("Requesting DataRef, RREF msg: %s", msg)
 			self.datarefsIndices[index][1].sendto(msg.encode('latin_1'), self.XPAddress)
 			self.datarefsIndices[index][1].setblocking(0)
 				
@@ -206,19 +263,33 @@ class XPlaneUDPServer(threading.Thread):
 	
 	## send command to XPlane
 	# @param string for the command to be sent to XPlane - refer to the XPlane doc for a list of available commands
-	#
-	def sendXPCmd(self, command):
-		if self.XPAddress is not None:
+	# @param sendContinuous		default False, command will only be sent once. If True, the command will be sent continuously until a call to stopSendingXPCmd is made
+	def sendXPCmd(self, command, sendContinuous = False):
+		if self.XPAddress is not None and command is not None:
 			msg = 'CMND0'
 			msg += command
 
 			self.sendSock.sendto(msg.encode("latin_1"), self.XPAddress)
+			logging.debug('sent XP command : '+msg )
+			if sendContinuous == True:
+				# let's make sure this command is not in the queue already
+				matching_cmds = [cmd for cmd in self.continuousXPCommandsQueue if (cmd == command) ]
+				if len(matching_cmds) == 0: # if its not then lets add it
+					self.continuousXPCommandsQueue.append(msg)
 			
 			for callback in self.XPCmd_Callback_Functions:
 				callback(command)
 		else:
 			logging.error("XPlane IP address undefined")
 			
+	
+	def stopSendingXPCmd(self, command):
+		command = 'CMND0' + command
+		try:
+			self.continuousXPCommandsQueue.remove(command)
+		except:
+			logging.debug('Error removing command from continuous commands queue', exc_info=True)
+	
 	
 	## send Dataref to XPlane
 	# @param string for the dataref to be sent to XPlane - refer to the XPlane doc for a list of available datarefs
@@ -235,23 +306,38 @@ class XPlaneUDPServer(threading.Thread):
 		else:
 			logging.error("XPlane IP address undefined")
 		
+	## send Dataref to XPlane
+	# @param dataref string for the dataref to be sent to XPlane - refer to the XPlane doc for a list of available datarefs
+	# @param index the index - for datarefs that have multiple values, default 0
+	# @param value - the value to set the dataref to
+	#
+	def sendXPDref(self, dataref, index = 0, value = 0.0):
+		logging.debug('sending DREF'+dataref)
+		
+		if self.XPAddress is not None:
+			val = float(value)
+			
+			dataref += '['+str(index)+']'
+			
+			bytesval = pack('<f',val)
+			nr_trailing_spaces = 500-len(dataref)
+			
+			msg = 'DREF0'.encode("latin_1")+bytesval+dataref.encode("latin_1")
+			msg += ' '.encode("latin_1")*nr_trailing_spaces
+			#logging.debug('UDP message: ' + msg.decode())
+			if len(msg) == 509:
+				logging.debug('sending UDP message: ' )
+			
+				self.sendSock.sendto(msg, self.XPAddress)
+		else:
+			logging.error("XPlane IP address undefined")
+		
 	## registers a callback function to be called if the class receives a sendXPCmd() call
 	# @param callback - the callback function, it will be given the command string as parameter so your callback must handle the command string
 	#
 	def registerXPCmdCallback(self, callback):
 		self.XPCmd_Callback_Functions.append(callback)
 		
-	
-	## Enables the redirection of traffic received by the class to XPlane
-	# @param myAddress: The address the class is listening for traffic on. Format: (IP,port)
-	# @param XPAddress: The XP address we will be forwarding the packets to. Format: (IP, port)
-	#
-	def enableRedirectUDPtoXP(self, myAddress, XPAddress):
-		self.RDRCT_TRAFFIC = True
-		self.XPAddress = XPAddress
-		self.DataRCVsock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-		self.DataRCVsock.setblocking(0)
-		self.DataRCVsock.bind(myAddress)
 	
 	## Internal thread loop - Do not call - use the start() method to start the thread, which will call run() 
 	# infinite loop listening for data from XPlane. When data is received, it is parsed and stored/updated in the 
@@ -265,24 +351,31 @@ class XPlaneUDPServer(threading.Thread):
 		while self.running:
 			current_time = time.time()
 			
-			try:
-				msg = self.mcast_sock.recv(10240)
+			##---------------------------------------------------
+			#	check XPlane beacon
+			##---------------------------------------------------
+			try: 
+				(msg, address) = self.mcast_sock.recvfrom(10240)
+				#logging.debug('received beacon from address '+str(address))
 				self.__parseXplaneBeaconPacket(msg)
-				if self.XPbeacon['computer_name'] == self.XPComputerName : # it seems the XPlane instance we are trying to communicate with is alive
+				if self.XPbeacon['computer_name'] == self.XPComputerName and address[0] == self.XPAddress[0]: # it seems the XPlane instance we are trying to communicate with is alive
 					lasttimeXPbeaconreceived = current_time
 					if self.XPalive == False: # if xplane was down it is now back up again, lets try and re subscribe the datarefs
 						self.__resubscribeRREFs()
 					self.XPalive = True
-					self.statusMsg = "Connected to XPlane running on computer: "+self.XPComputerName 
+					self.statusMsg = "Connected to XPlane running on computer: "+self.XPComputerName + ", IP: "+str(address[0]) + ", Version: "+ str(self.XPbeacon['version_number']) 
 							
 			except socket.error as msg: pass
 			
 			elapsed_time_since_beacon_rcvd = current_time - lasttimeXPbeaconreceived
 			if elapsed_time_since_beacon_rcvd >= 2.5: #we have not received data from Xplane for a while
-				logging.info("Not received XPlane beacon for %s seconds", elapsed_time_since_beacon_rcvd)
+				#logging.debug("Not received XPlane beacon for %s seconds", elapsed_time_since_beacon_rcvd)
 				self.XPalive = False
-				self.statusMsg = "Not connected to XPlane, last message received "+str(elapsed_time_since_beacon_rcvd)+"seconds ago"
+				self.statusMsg = "Not connected to XPlane, last message received "+"{0:.0f}".format(elapsed_time_since_beacon_rcvd)+" seconds ago"
 					
+			##---------------------------------------------------
+			#	Process incoming XPlane UDP data
+			##---------------------------------------------------
 			try:
 				#print ("xp server atttempt to receive data...")
 				data, addr = self.XplaneRCVsock.recvfrom(8192) # receive data from XPlane
@@ -305,6 +398,9 @@ class XPlaneUDPServer(threading.Thread):
 			except socket.error as msg: pass
 				#print ("UDP Xplane receive error code ", str(msg[0]), " Message: ", str(msg[1]) )   
 			
+			##---------------------------------------------------
+			#	Process incoming RREF dataref data
+			##---------------------------------------------------
 			try:
 				if self.updatingRREFdict == False: # to avoid having issues with dictionary iteration
 					
@@ -320,7 +416,25 @@ class XPlaneUDPServer(threading.Thread):
 			
 			except socket.error as msg: pass
 			
+			##---------------------------------------------------
+			#	Send continuous XP Commands
+			##---------------------------------------------------
+			if self.XPAddress is not None :
+				for cmd in self.continuousXPCommandsQueue:
+					self.sendSock.sendto(cmd.encode("latin_1"), self.XPAddress)
+					#logging.debug('sent XP command : '+cmd )
+					
+					self.statusMsg += ' || '+str(self.continuousXPCommandsQueue)
+					
+					for callback in self.XPCmd_Callback_Functions:
+						callback(cmd)
+			else:
+				logging.error("XPlane IP address undefined")
 			
+			
+			##---------------------------------------------------
+			#	Redirect received traffic to XP if required
+			##---------------------------------------------------
 			if self.RDRCT_TRAFFIC == True:
 				try:
 					ardData,ardAddr = self.DataRCVsock.recvfrom(8192) # receive data from another source
@@ -328,15 +442,36 @@ class XPlaneUDPServer(threading.Thread):
 					self.sendSock.sendto(ardData, self.XPAddress) # forward it to XPlane
 				except socket.error as msg: pass
 					#print "UDP ARD receive error code ", str(msg[0]), " Message: ", str(msg[1]) 
-			time.sleep(0.01)
 			
+			
+			time.sleep(0.01)
+	
+	def __closeSockets(self):
+		try:
+			self.XplaneRCVsock.close()
+			self.mcast_sock.close()
+			if self.DataRCVsock != False:
+				self.DataRCVsock.close()
+		
+		except:
+			logging.error('Error while closing UDP server', exc_info=True)
+		
+	## restart the UDP sockets to communicate with XPlane
+	# @param Address: tuple of IP address (str), UDP port we are listening on (int)
+	# @param XPAddress: tuple of IP address (str), UDP port for XPlane (int)
+	# @param XPComputerName: Network name of the computer XPlane is running on
+	#
+	def restart(self, Address, XPAddress, XPComputerName):
+		self.__closeSockets()
+		self.initialiseUDP(Address, XPAddress, XPComputerName)
+		
+		
 	## Call to stop the thread and close the UDP sockets
 	#
 	def quit(self):
 		self.running = False
-		self.XplaneRCVsock.close()
-		if self.DataRCVsock != False:
-			self.DataRCVsock.close()
+		self.__closeSockets()
+		
 		for index, RREF in self.datarefsIndices.items():
 			self.datarefsIndices[index][1].close()
 		logging.info("UDP Server stopped...")
@@ -354,7 +489,7 @@ class XPlaneUDPServer(threading.Thread):
 			self.XPbeacon['port']					= unpack('<H', packet[19:21])[0]
 			self.XPbeacon['computer_name']			= packet[21:len(packet)-1].decode('ascii')
 			
-			#print (self.XPbeacon)
+			#logging.debug (str(self.XPbeacon))
 			
 	
 	## Internal method that parses a 'DATA' type packet received from XPlane
