@@ -10,12 +10,16 @@ import time
 from struct import *
 import xml.etree.ElementTree as ET
 
-## @brief Server Thread class that allows to send and receive datarefs, commands to X Plane over UDP.
-# @brief The class can also be configured to act as a relay to forward XPLane UDP packets to other devices on the network, or act as a concentrator and pass UDP packets from other network devices to XPlane 
-# when importing the module, an instance of the class is created called pyXPUDPServer. 
-# This instance needs to be initialised by calling the initialiseUDP() method, and the thread can be started by calling start() 
+PYTHON_VERSION = sys.version_info[0] 
+
+
+## Python class that allows to communicate with XPlane via UDP: Set/receive datarefs, send commands; The class can also be set up to forward XPlane UDP traffic to other devices on the network, and/or redirect traffic from these devices to XPlane.
+# When importing the module, an instance of the class is created called pyXPUDPServer. 
+# This instance needs to be initialised by calling the initialiseUDP() or initialiseUDPXMLConfig() method, and the thread can be started by calling start(). 
 # 
-# The class is inherited from the Threading module, and will run as its own thread when started
+# The class is inherited from the Threading module, and will run as its own thread when started.
+# The class will keep track of the status of the connectivity with XPlane; if it is interrupted, it will re connect to XPlane when it comes back online, and re subscribe any datarefs.
+# You need to call the quit() method when exiting the programme.
 # Simple Example:
 #
 # @code
@@ -24,19 +28,26 @@ import xml.etree.ElementTree as ET
 # # where ('127.0.0.1',49008) is the IP and port this class is listening on (configure in the Net connections in XPlane)
 # # and ('192.168.1.1',49000) is the IP and port of XPlane
 # # 'MYPC' is the name of the computer XPlane is running on
-# XPUDP.pyXPUDPServer.start()
+# # You can also initialise from an XML configuration file:
+# XPUDP.pyXPUDPServer.initialiseUDPXMLConfig('UDPSettings.xml')
 #
-# value = XPUDP.pyXPUDPServer.getData((17,3)) 	# read the value sent by XPlane for datagroup 17, position 4 (mag heading)
+# XPUDP.pyXPUDPServer.start() # start the server which will run an infinite loop
+# 
+# while True: # infinite loop - for a real application plan for a 'proper' way to exit the programme and break this loop 
+# 	value = XPUDP.pyXPUDPServer.getData((17,3)) 	# read the value sent by XPlane for datagroup 17, position 4 (mag heading)
+# 	transp_mode = XPUDP.pyXPUDPServer.getData("sim/cockpit2/radios/actuators/transponder_mode[0]") # gets the value of this dataref in XPlane
+#	
+#	XPUDP.pyXPUDPServer.sendXPCmd('sim/engines/engage_starters') # send command to XPlane to engage the engine starters
+#	XPUDP.pyXPUDPServer.sendXPDref("sim/flightmodel/controls/flaprqst", 0, value = 0.5) # set the requested flap deployment to 0.5 - bear in mind the flap will then deploy and take some time to do so - monitor its actual position if needed
+#
+# XPUDP.pyXPUDPServer.quit() # exit the server thread and close the sockets
+#
 # @endcode
 #
-
-PYTHON_VERSION = sys.version_info[0] 
-
 class XPlaneUDPServer(threading.Thread):
 
 	## constructor 
-	# @param Address: tuple of IP address, UDP port we are listening on
-	#
+	# 
 	def __init__(self):
 		threading.Thread.__init__(self)
 		self.running = True
@@ -266,7 +277,7 @@ class XPlaneUDPServer(threading.Thread):
 				for index, RREF in self.datarefsIndices.items():
 					self.__sendRREFmessage(index)
 	
-	## send command to XPlane
+	## Send command to XPlane
 	# @param string for the command to be sent to XPlane - refer to the XPlane doc for a list of available commands
 	# @param sendContinuous		default False, command will only be sent once. If True, the command will be sent continuously until a call to stopSendingXPCmd is made
 	def sendXPCmd(self, command, sendContinuous = False):
@@ -287,7 +298,9 @@ class XPlaneUDPServer(threading.Thread):
 		else:
 			logging.error("XPlane IP address undefined")
 			
-	
+	## Stop sending a command that was being sent continuously to XPlane
+	# @param string for the command to be sent to XPlane - refer to the XPlane doc for a list of available commands
+	# 	
 	def stopSendingXPCmd(self, command):
 		command = 'CMND0' + command
 		try:
@@ -356,9 +369,9 @@ class XPlaneUDPServer(threading.Thread):
 		while self.running:
 			current_time = time.time()
 			
-			##---------------------------------------------------
+			#---------------------------------------------------
 			#	check XPlane beacon
-			##---------------------------------------------------
+			#---------------------------------------------------
 			try: 
 				(msg, address) = self.mcast_sock.recvfrom(10240)
 				#logging.debug('received beacon from address '+str(address))
@@ -378,9 +391,9 @@ class XPlaneUDPServer(threading.Thread):
 				self.XPalive = False
 				self.statusMsg = "Not connected to XPlane, last message received "+"{0:.0f}".format(elapsed_time_since_beacon_rcvd)+" seconds ago"
 					
-			##---------------------------------------------------
+			#---------------------------------------------------
 			#	Process incoming XPlane UDP data
-			##---------------------------------------------------
+			#---------------------------------------------------
 			try:
 				#print ("xp server atttempt to receive data...")
 				data, addr = self.XplaneRCVsock.recvfrom(8192) # receive data from XPlane
@@ -403,9 +416,9 @@ class XPlaneUDPServer(threading.Thread):
 			except socket.error as msg: pass
 				#print ("UDP Xplane receive error code ", str(msg[0]), " Message: ", str(msg[1]) )   
 			
-			##---------------------------------------------------
+			#---------------------------------------------------
 			#	Process incoming RREF dataref data
-			##---------------------------------------------------
+			#---------------------------------------------------
 			try:
 				if self.updatingRREFdict == False: # to avoid having issues with dictionary iteration
 					
@@ -421,9 +434,9 @@ class XPlaneUDPServer(threading.Thread):
 			
 			except socket.error as msg: pass
 			
-			##---------------------------------------------------
+			#---------------------------------------------------
 			#	Send continuous XP Commands
-			##---------------------------------------------------
+			#---------------------------------------------------
 			if self.XPAddress is not None :
 				for cmd in self.continuousXPCommandsQueue:
 					self.sendSock.sendto(cmd.encode("latin_1"), self.XPAddress)
@@ -437,9 +450,9 @@ class XPlaneUDPServer(threading.Thread):
 				logging.error("XPlane IP address undefined")
 			
 			
-			##---------------------------------------------------
+			#---------------------------------------------------
 			#	Redirect received traffic to XP if required
-			##---------------------------------------------------
+			#---------------------------------------------------
 			if self.RDRCT_TRAFFIC == True:
 				try:
 					ardData,ardAddr = self.DataRCVsock.recvfrom(8192) # receive data from another source
@@ -451,6 +464,8 @@ class XPlaneUDPServer(threading.Thread):
 			
 			time.sleep(0.01)
 	
+	## private - close the UDP sockets
+	#
 	def __closeSockets(self):
 		try:
 			self.XplaneRCVsock.close()
