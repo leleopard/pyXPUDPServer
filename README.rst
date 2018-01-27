@@ -1,5 +1,5 @@
 ## This software is licensed under the MIT License - please refer to the LICENCE file for details
-#
+
 # Copyright (c) 2018 Stephane Teisserenc
 
 Python module that allows to communicate with XPlane via UDP: Set/receive datarefs, send commands; The class can also be set up to forward XPlane UDP traffic to other devices on the network, and/or redirect traffic from these devices to XPlane.
@@ -15,9 +15,13 @@ Simple Example:
 import pyxpudpserver as XPUDP
 XPUDP.pyXPUDPServer.initialiseUDP(('127.0.0.1',49008), ('192.168.1.1',49000), 'MYPC')
 # where ('127.0.0.1',49008) is the IP and port this class is listening on (configure in the Net connections in XPlane)
+
 # and ('192.168.1.1',49000) is the IP and port of XPlane
+
 # 'MYPC' is the name of the computer XPlane is running on
+
 # You can also initialise from an XML configuration file:
+
 XPUDP.pyXPUDPServer.initialiseUDPXMLConfig('UDPSettings.xml')
 
 XPUDP.pyXPUDPServer.start() # start the server which will run an infinite loop
