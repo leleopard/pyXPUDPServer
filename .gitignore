@@ -3,6 +3,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 *.py~
+*.pyc
 
 
 *.tmp
@@ -15,3 +16,9 @@ __pycache__/
 
 #doc folder
 docs/
+
+# Setuptools distribution folder.
+/dist/
+
+# Python egg metadata, regenerated from source files by setuptools.
+/*.egg-info
