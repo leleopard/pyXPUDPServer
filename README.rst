@@ -2,6 +2,15 @@
 
 # Copyright (c) 2018 Stephane Teisserenc
 
+***************************************************************************************************************************
+Installation
+***************************************************************************************************************************
+install python 3 and pip
+install with pip: pip install pyxpudpserver (you may need to use pip3 rather than pip)
+
+***************************************************************************************************************************
+Description
+***************************************************************************************************************************
 Python module that allows to communicate with XPlane via UDP: Set/receive datarefs, send commands; The class can also be set up to forward XPlane UDP traffic to other devices on the network, and/or redirect traffic from these devices to XPlane.
 When importing the module, an instance of the class is created called pyXPUDPServer.
 This instance needs to be initialised by calling the initialiseUDP() or initialiseUDPXMLConfig() method, and the thread can be started by calling start().
@@ -9,8 +18,10 @@ This instance needs to be initialised by calling the initialiseUDP() or initiali
 The class is inherited from the Threading module, and will run as its own thread when started.
 The class will keep track of the status of the connectivity with XPlane; if it is interrupted, it will re connect to XPlane when it comes back online, and re subscribe any datarefs.
 You need to call the quit() method when exiting the programme.
-Simple Example:
 
+***************************************************************************************************************************
+Simple Example:
+***************************************************************************************************************************
 @code
 import pyxpudpserver as XPUDP
 XPUDP.pyXPUDPServer.initialiseUDP(('127.0.0.1',49008), ('192.168.1.1',49000), 'MYPC')
