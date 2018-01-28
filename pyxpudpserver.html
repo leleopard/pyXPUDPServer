@@ -73,12 +73,22 @@
 <dl class="method">
 <dt id="pyxpudpserver.XPlaneUDPServer.XPlaneUDPServer.disableRedirectUDPtoXP">
 <code class="descname">disableRedirectUDPtoXP</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyxpudpserver.XPlaneUDPServer.XPlaneUDPServer.disableRedirectUDPtoXP" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Disables the redirection of traffic received by the class to XPlane</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="pyxpudpserver.XPlaneUDPServer.XPlaneUDPServer.enableForwardXPpackets">
 <code class="descname">enableForwardXPpackets</code><span class="sig-paren">(</span><em>forwardAddresses</em><span class="sig-paren">)</span><a class="headerlink" href="#pyxpudpserver.XPlaneUDPServer.XPlaneUDPServer.enableForwardXPpackets" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Enables the forwarding of data received from XPLane to a list of IP addresses</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>forwardAddresses</strong> – a list of addresses to forward to, in the format [(IP1,port1),(IP2,port2), … ]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="pyxpudpserver.XPlaneUDPServer.XPlaneUDPServer.enableRedirectUDPtoXP">
@@ -101,7 +111,17 @@
 <dl class="method">
 <dt id="pyxpudpserver.XPlaneUDPServer.XPlaneUDPServer.getData">
 <code class="descname">getData</code><span class="sig-paren">(</span><em>dataReference</em><span class="sig-paren">)</span><a class="headerlink" href="#pyxpudpserver.XPlaneUDPServer.XPlaneUDPServer.getData" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Returns data last received from XPlane for the key, index provided.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>dataReference</strong> – This can be either a tuple if requesting data set up in the Data Input&amp;Output screen in XPlane, or a string if requesting data from a dataref. The method will automatically request XP to send the dataref if it has not been done previously.</td>
+</tr>
+</tbody>
+</table>
+<p>getData(“sim/cockpit2/radios/actuators/transponder_mode[0]”)</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="pyxpudpserver.XPlaneUDPServer.XPlaneUDPServer.initialiseUDP">
