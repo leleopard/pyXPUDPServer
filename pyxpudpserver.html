@@ -1,0 +1,216 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>pyxpudpserver package &#8212; pyXPUDPServer 1 documentation</title>
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+  </head>
+  <body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">pyXPUDPServer 1 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="pyxpudpserver-package">
+<h1>pyxpudpserver package<a class="headerlink" href="#pyxpudpserver-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-pyxpudpserver.XPlaneUDPServer">
+<span id="pyxpudpserver-xplaneudpserver-module"></span><h2>pyxpudpserver.XPlaneUDPServer module<a class="headerlink" href="#module-pyxpudpserver.XPlaneUDPServer" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="pyxpudpserver.XPlaneUDPServer.XPlaneUDPServer">
+<em class="property">class </em><code class="descclassname">pyxpudpserver.XPlaneUDPServer.</code><code class="descname">XPlaneUDPServer</code><a class="headerlink" href="#pyxpudpserver.XPlaneUDPServer.XPlaneUDPServer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">threading.Thread</span></code></p>
+<p>Constructor, do not call directly, when importing the module, an instance of the class is created called pyXPUDPServer.</p>
+<dl class="method">
+<dt id="pyxpudpserver.XPlaneUDPServer.XPlaneUDPServer.disableRedirectUDPtoXP">
+<code class="descname">disableRedirectUDPtoXP</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyxpudpserver.XPlaneUDPServer.XPlaneUDPServer.disableRedirectUDPtoXP" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pyxpudpserver.XPlaneUDPServer.XPlaneUDPServer.enableForwardXPpackets">
+<code class="descname">enableForwardXPpackets</code><span class="sig-paren">(</span><em>forwardAddresses</em><span class="sig-paren">)</span><a class="headerlink" href="#pyxpudpserver.XPlaneUDPServer.XPlaneUDPServer.enableForwardXPpackets" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pyxpudpserver.XPlaneUDPServer.XPlaneUDPServer.enableRedirectUDPtoXP">
+<code class="descname">enableRedirectUDPtoXP</code><span class="sig-paren">(</span><em>myAddress</em>, <em>XPAddress</em><span class="sig-paren">)</span><a class="headerlink" href="#pyxpudpserver.XPlaneUDPServer.XPlaneUDPServer.enableRedirectUDPtoXP" title="Permalink to this definition">¶</a></dt>
+<dd><p>Enables the redirection of traffic received by the class to XPlane</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>myAddress</strong> – The address the class is listening for traffic on. Format: (IP,port)</li>
+<li><strong>XPAddress</strong> – The XP address we will be forwarding the packets to. Format: (IP, port)</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyxpudpserver.XPlaneUDPServer.XPlaneUDPServer.getData">
+<code class="descname">getData</code><span class="sig-paren">(</span><em>dataReference</em><span class="sig-paren">)</span><a class="headerlink" href="#pyxpudpserver.XPlaneUDPServer.XPlaneUDPServer.getData" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pyxpudpserver.XPlaneUDPServer.XPlaneUDPServer.initialiseUDP">
+<code class="descname">initialiseUDP</code><span class="sig-paren">(</span><em>Address</em>, <em>XPAddress</em>, <em>XPComputerName</em><span class="sig-paren">)</span><a class="headerlink" href="#pyxpudpserver.XPlaneUDPServer.XPlaneUDPServer.initialiseUDP" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialise the UDP sockets to communicate with XPlane</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>Address</strong> – tuple of IP address (str), UDP port (int) we are listening on</li>
+<li><strong>XPAddress</strong> – tuple of IP address (str), UDP port (int) for XPlane</li>
+<li><strong>XPComputerName</strong> (<em>str</em>) – Network name of the computer XPlane is running on</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyxpudpserver.XPlaneUDPServer.XPlaneUDPServer.initialiseUDPXMLConfig">
+<code class="descname">initialiseUDPXMLConfig</code><span class="sig-paren">(</span><em>XMLConfigFile</em><span class="sig-paren">)</span><a class="headerlink" href="#pyxpudpserver.XPlaneUDPServer.XPlaneUDPServer.initialiseUDPXMLConfig" title="Permalink to this definition">¶</a></dt>
+<dd><p>”
+Initialise the UDP sockets to communicate with XPlane via XML configuration file</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>XMLConfigFile</strong> – relative path to XML config file</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyxpudpserver.XPlaneUDPServer.XPlaneUDPServer.printData">
+<code class="descname">printData</code><span class="sig-paren">(</span><em>dataReference</em><span class="sig-paren">)</span><a class="headerlink" href="#pyxpudpserver.XPlaneUDPServer.XPlaneUDPServer.printData" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pyxpudpserver.XPlaneUDPServer.XPlaneUDPServer.quit">
+<code class="descname">quit</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyxpudpserver.XPlaneUDPServer.XPlaneUDPServer.quit" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pyxpudpserver.XPlaneUDPServer.XPlaneUDPServer.registerXPCmdCallback">
+<code class="descname">registerXPCmdCallback</code><span class="sig-paren">(</span><em>callback</em><span class="sig-paren">)</span><a class="headerlink" href="#pyxpudpserver.XPlaneUDPServer.XPlaneUDPServer.registerXPCmdCallback" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pyxpudpserver.XPlaneUDPServer.XPlaneUDPServer.requestXPDref">
+<code class="descname">requestXPDref</code><span class="sig-paren">(</span><em>dataref</em><span class="sig-paren">)</span><a class="headerlink" href="#pyxpudpserver.XPlaneUDPServer.XPlaneUDPServer.requestXPDref" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pyxpudpserver.XPlaneUDPServer.XPlaneUDPServer.restart">
+<code class="descname">restart</code><span class="sig-paren">(</span><em>Address</em>, <em>XPAddress</em>, <em>XPComputerName</em><span class="sig-paren">)</span><a class="headerlink" href="#pyxpudpserver.XPlaneUDPServer.XPlaneUDPServer.restart" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pyxpudpserver.XPlaneUDPServer.XPlaneUDPServer.run">
+<code class="descname">run</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyxpudpserver.XPlaneUDPServer.XPlaneUDPServer.run" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pyxpudpserver.XPlaneUDPServer.XPlaneUDPServer.sendXPCmd">
+<code class="descname">sendXPCmd</code><span class="sig-paren">(</span><em>command</em>, <em>sendContinuous=False</em><span class="sig-paren">)</span><a class="headerlink" href="#pyxpudpserver.XPlaneUDPServer.XPlaneUDPServer.sendXPCmd" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pyxpudpserver.XPlaneUDPServer.XPlaneUDPServer.sendXPDref">
+<code class="descname">sendXPDref</code><span class="sig-paren">(</span><em>dataref</em>, <em>index=0</em>, <em>value=0.0</em><span class="sig-paren">)</span><a class="headerlink" href="#pyxpudpserver.XPlaneUDPServer.XPlaneUDPServer.sendXPDref" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pyxpudpserver.XPlaneUDPServer.XPlaneUDPServer.stopSendingXPCmd">
+<code class="descname">stopSendingXPCmd</code><span class="sig-paren">(</span><em>command</em><span class="sig-paren">)</span><a class="headerlink" href="#pyxpudpserver.XPlaneUDPServer.XPlaneUDPServer.stopSendingXPCmd" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-pyxpudpserver">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-pyxpudpserver" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">pyXPUDPServer 1 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018, Stephane Teisserenc.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
+    </div>
+  </body>
+</html>

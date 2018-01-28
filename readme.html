@@ -1,0 +1,125 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Read me &#8212; pyXPUDPServer 1 documentation</title>
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Welcome to pyXPUDPServer’s documentation!" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to pyXPUDPServer’s documentation!"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">pyXPUDPServer 1 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Welcome to pyXPUDPServer’s documentation!</a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="read-me">
+<h1>Read me<a class="headerlink" href="#read-me" title="Permalink to this headline">¶</a></h1>
+<p>## This software is licensed under the MIT License - please refer to the LICENCE file for details</p>
+<p># Copyright (c) 2018 Stephane Teisserenc</p>
+<p>Python module that allows to communicate with XPlane via UDP: Set/receive datarefs, send commands; The class can also be set up to forward XPlane UDP traffic to other devices on the network, and/or redirect traffic from these devices to XPlane.
+When importing the module, an instance of the class is created called pyXPUDPServer.
+This instance needs to be initialised by calling the initialiseUDP() or initialiseUDPXMLConfig() method, and the thread can be started by calling start().</p>
+<p>The class is inherited from the Threading module, and will run as its own thread when started.
+The class will keep track of the status of the connectivity with XPlane; if it is interrupted, it will re connect to XPlane when it comes back online, and re subscribe any datarefs.
+You need to call the quit() method when exiting the programme.
+Simple Example:</p>
+<p>&#64;code
+import pyxpudpserver as XPUDP
+XPUDP.pyXPUDPServer.initialiseUDP((‘127.0.0.1’,49008), (‘192.168.1.1’,49000), ‘MYPC’)
+# where (‘127.0.0.1’,49008) is the IP and port this class is listening on (configure in the Net connections in XPlane)</p>
+<p># and (‘192.168.1.1’,49000) is the IP and port of XPlane</p>
+<p># ‘MYPC’ is the name of the computer XPlane is running on</p>
+<p># You can also initialise from an XML configuration file:</p>
+<p>XPUDP.pyXPUDPServer.initialiseUDPXMLConfig(‘UDPSettings.xml’)</p>
+<p>XPUDP.pyXPUDPServer.start() # start the server which will run an infinite loop</p>
+<dl class="docutils">
+<dt>while True: # infinite loop - for a real application plan for a ‘proper’ way to exit the programme and break this loop</dt>
+<dd>value = XPUDP.pyXPUDPServer.getData((17,3))     # read the value sent by XPlane for datagroup 17, position 4 (mag heading)
+transp_mode = XPUDP.pyXPUDPServer.getData(“sim/cockpit2/radios/actuators/transponder_mode[0]”) # gets the value of this dataref in XPlane</dd>
+</dl>
+<p>XPUDP.pyXPUDPServer.sendXPCmd(‘sim/engines/engage_starters’) # send command to XPlane to engage the engine starters
+XPUDP.pyXPUDPServer.sendXPDref(“sim/flightmodel/controls/flaprqst”, 0, value = 0.5) # set the requested flap deployment to 0.5 - bear in mind the flap will then deploy and take some time to do so - monitor its actual position if needed</p>
+<p>XPUDP.pyXPUDPServer.quit() # exit the server thread and close the sockets</p>
+<p>&#64;endcode</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to pyXPUDPServer’s documentation!"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">pyXPUDPServer 1 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018, Stephane Teisserenc.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.6.
+    </div>
+  </body>
+</html>
