@@ -118,9 +118,14 @@
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>dataReference</strong> – This can be either a tuple if requesting data set up in the Data Input&amp;Output screen in XPlane, or a string if requesting data from a dataref. The method will automatically request XP to send the dataref if it has not been done previously.</td>
 </tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">value of the dataref (float) or 0.0 by default if no data Received</td>
+</tr>
 </tbody>
 </table>
-<p>getData(“sim/cockpit2/radios/actuators/transponder_mode[0]”)</p>
+<dl class="docutils">
+<dt>Example::</dt>
+<dd>getData(“sim/cockpit2/radios/actuators/transponder_mode[0]”)</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
@@ -134,7 +139,7 @@
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>Address</strong> – tuple of IP address (str), UDP port (int) we are listening on</li>
 <li><strong>XPAddress</strong> – tuple of IP address (str), UDP port (int) for XPlane</li>
-<li><strong>XPComputerName</strong> (<em>str</em>) – Network name of the computer XPlane is running on</li>
+<li><strong>XPComputerName</strong> (<em>string</em>) – Network name of the computer XPlane is running on</li>
 </ul>
 </td>
 </tr>
@@ -145,13 +150,12 @@
 <dl class="method">
 <dt id="pyxpudpserver.XPlaneUDPServer.XPlaneUDPServer.initialiseUDPXMLConfig">
 <code class="descname">initialiseUDPXMLConfig</code><span class="sig-paren">(</span><em>XMLConfigFile</em><span class="sig-paren">)</span><a class="headerlink" href="#pyxpudpserver.XPlaneUDPServer.XPlaneUDPServer.initialiseUDPXMLConfig" title="Permalink to this definition">¶</a></dt>
-<dd><p>”
-Initialise the UDP sockets to communicate with XPlane via XML configuration file</p>
+<dd><p>Initialise the UDP sockets to communicate with XPlane via XML configuration file</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>XMLConfigFile</strong> – relative path to XML config file</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>XMLConfigFile</strong> (<em>string</em>) – relative path to XML config file</td>
 </tr>
 </tbody>
 </table>
@@ -160,47 +164,132 @@ Initialise the UDP sockets to communicate with XPlane via XML configuration file
 <dl class="method">
 <dt id="pyxpudpserver.XPlaneUDPServer.XPlaneUDPServer.printData">
 <code class="descname">printData</code><span class="sig-paren">(</span><em>dataReference</em><span class="sig-paren">)</span><a class="headerlink" href="#pyxpudpserver.XPlaneUDPServer.XPlaneUDPServer.printData" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Prints data to the console for the key, index provided.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>dataReference</strong> – This can be either a tuple if requesting data set up in the Data Input&amp;Output screen in XPlane, or a string if requesting data from a dataref. The method will automatically request XP to send the dataref if it has not been done previously.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="pyxpudpserver.XPlaneUDPServer.XPlaneUDPServer.quit">
 <code class="descname">quit</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyxpudpserver.XPlaneUDPServer.XPlaneUDPServer.quit" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Call to stop the thread and close the UDP sockets</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="pyxpudpserver.XPlaneUDPServer.XPlaneUDPServer.registerXPCmdCallback">
 <code class="descname">registerXPCmdCallback</code><span class="sig-paren">(</span><em>callback</em><span class="sig-paren">)</span><a class="headerlink" href="#pyxpudpserver.XPlaneUDPServer.XPlaneUDPServer.registerXPCmdCallback" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Registers a callback function to be called if the class receives a sendXPCmd() call</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>callback</strong> – The callback function, it will be given the command string as parameter so your callback must handle the command string</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Type:</th><td class="field-body">function</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="pyxpudpserver.XPlaneUDPServer.XPlaneUDPServer.requestXPDref">
 <code class="descname">requestXPDref</code><span class="sig-paren">(</span><em>dataref</em><span class="sig-paren">)</span><a class="headerlink" href="#pyxpudpserver.XPlaneUDPServer.XPlaneUDPServer.requestXPDref" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Request Dataref from XPlane - note calling getData(‘somedataref’) will achieve the same effect and is easier (will call this function in the background)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>dataref</strong> (<em>string</em>) – dataref requested from XPlane - refer to the XPlane doc for a list of available datarefs</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="pyxpudpserver.XPlaneUDPServer.XPlaneUDPServer.restart">
 <code class="descname">restart</code><span class="sig-paren">(</span><em>Address</em>, <em>XPAddress</em>, <em>XPComputerName</em><span class="sig-paren">)</span><a class="headerlink" href="#pyxpudpserver.XPlaneUDPServer.XPlaneUDPServer.restart" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Restart the UDP sockets to communicate with XPlane</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>Address</strong> – tuple of IP address (str), UDP port we are listening on (int)</li>
+<li><strong>XPAddress</strong> – tuple of IP address (str), UDP port for XPlane (int)</li>
+<li><strong>XPComputerName</strong> (<em>string</em>) – Network name of the computer XPlane is running on</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="pyxpudpserver.XPlaneUDPServer.XPlaneUDPServer.run">
 <code class="descname">run</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pyxpudpserver.XPlaneUDPServer.XPlaneUDPServer.run" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Internal thread loop - Do not call - use the start() method to start the thread, which will call run()
+Infinite loop listening for data from XPlane. When data is received, it is parsed and stored/updated in the
+private dataList attribute
+If the instance has been configured to forward XPlane packets, it will loop through the forward addresses to do so
+If the instance has been configured to re direct traffic to XPlane, it will forward any packets received to XP</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="pyxpudpserver.XPlaneUDPServer.XPlaneUDPServer.sendXPCmd">
 <code class="descname">sendXPCmd</code><span class="sig-paren">(</span><em>command</em>, <em>sendContinuous=False</em><span class="sig-paren">)</span><a class="headerlink" href="#pyxpudpserver.XPlaneUDPServer.XPlaneUDPServer.sendXPCmd" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Send command to XPlane</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>command</strong> (<em>string</em>) – command to be sent to XPlane - refer to the XPlane doc for a list of available commands</li>
+<li><strong>sendContinuous</strong> (<em>bool</em>) – default False, command will only be sent once. If True, the command will be sent continuously until a call to stopSendingXPCmd is made</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="pyxpudpserver.XPlaneUDPServer.XPlaneUDPServer.sendXPDref">
 <code class="descname">sendXPDref</code><span class="sig-paren">(</span><em>dataref</em>, <em>index=0</em>, <em>value=0.0</em><span class="sig-paren">)</span><a class="headerlink" href="#pyxpudpserver.XPlaneUDPServer.XPlaneUDPServer.sendXPDref" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Sets the value of a dataref in XPlane</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>dataref</strong> (<em>string</em>) – Dataref to be set in XPlane - refer to the XPlane doc for a list of available datarefs</li>
+<li><strong>index</strong> (<em>int</em>) – the index of the dataref to set, for datarefs that have multiple values. Default is 0</li>
+<li><strong>value</strong> (<em>float</em>) – the value to set the dataref to</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="pyxpudpserver.XPlaneUDPServer.XPlaneUDPServer.stopSendingXPCmd">
 <code class="descname">stopSendingXPCmd</code><span class="sig-paren">(</span><em>command</em><span class="sig-paren">)</span><a class="headerlink" href="#pyxpudpserver.XPlaneUDPServer.XPlaneUDPServer.stopSendingXPCmd" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Stop sending command to XPlane, where a call to sendXPCmd for this command has been made with sendContinuous set to True</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>command</strong> (<em>string</em>) – command to stop sending to XPlane - refer to the XPlane doc for a list of available commands</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 </dd></dl>
 
