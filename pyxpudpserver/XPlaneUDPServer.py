@@ -11,6 +11,7 @@ from struct import *
 import xml.etree.ElementTree as ET
 
 logger = logging.getLogger('UDPserver')
+VERSION = "v1.1"
 
 ## Python class that allows to communicate with XPlane via UDP: Set/receive datarefs, send commands; The class can also be set up to forward XPlane UDP traffic to other devices on the network, and/or redirect traffic from these devices to XPlane.
 # When importing the module, an instance of the class is created called pyXPUDPServer.
@@ -108,7 +109,7 @@ class XPlaneUDPServer(threading.Thread):
 		:type XPComputerName: string
 		"""
 
-		logger.info("Initialising XPlaneUDPServer on address: %s", Address)
+		logger.info("Initialising XPlaneUDPServer version %s on address: %s", VERSION, Address)
 		# socket listening to XPlane Data
 		try:
 			self.XplaneRCVsock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

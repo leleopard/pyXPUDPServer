@@ -1,0 +1,11 @@
+#############################################
+# To re upload on pypi:
+#############################################
+1. update setup.py version
+2. update VERSION in XPlaneUDPServer.py
+3. run python3 setup.py sdist
+4. run twine upload dist/*
+
+#############################################
+# To re generate and publish docs:
+#############################################
