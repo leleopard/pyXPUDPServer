@@ -11,7 +11,7 @@ from struct import *
 import xml.etree.ElementTree as ET
 
 logger = logging.getLogger('UDPserver')
-VERSION = "v1.1"
+VERSION = "v1.2"
 
 ## Python class that allows to communicate with XPlane via UDP: Set/receive datarefs, send commands; The class can also be set up to forward XPlane UDP traffic to other devices on the network, and/or redirect traffic from these devices to XPlane.
 # When importing the module, an instance of the class is created called pyXPUDPServer.
@@ -58,6 +58,7 @@ class XPlaneUDPServer(threading.Thread):
 		self.running = True
 		self.updatingRREFdict = False
 		self.statusMsg = "Not connected"
+		self.haveWeEverBeenConnectedToXP = False
 
 		self.XPbeacon = {
 			'beacon_major_version'	: None,
@@ -109,7 +110,7 @@ class XPlaneUDPServer(threading.Thread):
 		:type XPComputerName: string
 		"""
 
-		logger.info("Initialising XPlaneUDPServer version %s on address: %s", VERSION, Address)
+		logger.info("Initialising XPlaneUDPServer version "+str(VERSION) +" on address: "+ str(Address))
 		# socket listening to XPlane Data
 		try:
 			self.XplaneRCVsock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -482,6 +483,7 @@ class XPlaneUDPServer(threading.Thread):
 					if self.XPalive == False: # if xplane was down it is now back up again, lets try and re subscribe the datarefs
 						self.__resubscribeRREFs()
 					self.XPalive = True
+					self.haveWeEverBeenConnectedToXP = True
 					self.statusMsg = "Connected to XPlane running on computer: "+self.XPComputerName + ", IP: "+str(address[0]) + ", Version: "+ str(self.XPbeacon['version_number'])
 
 			except socket.error as msg: pass
@@ -490,7 +492,9 @@ class XPlaneUDPServer(threading.Thread):
 			if elapsed_time_since_beacon_rcvd >= 2.5: #we have not received data from Xplane for a while
 				#logger.debug("Not received XPlane beacon for %s seconds", elapsed_time_since_beacon_rcvd)
 				self.XPalive = False
-				self.statusMsg = "Not connected to XPlane, last message received "+"{0:.0f}".format(elapsed_time_since_beacon_rcvd)+" seconds ago"
+				self.statusMsg = "Not connected to XPlane"
+				if self.haveWeEverBeenConnectedToXP == True:
+					self.statusMsg +=", last message received "+"{0:.0f}".format(elapsed_time_since_beacon_rcvd)+" seconds ago"
 
 			##---------------------------------------------------
 			#	Process incoming XPlane UDP data
