@@ -11,7 +11,7 @@ from struct import *
 import xml.etree.ElementTree as ET
 
 logger = logging.getLogger('UDPserver')
-VERSION = "v1.2"
+VERSION = "v1.2.1"
 
 ## Python class that allows to communicate with XPlane via UDP: Set/receive datarefs, send commands; The class can also be set up to forward XPlane UDP traffic to other devices on the network, and/or redirect traffic from these devices to XPlane.
 # When importing the module, an instance of the class is created called pyXPUDPServer.
@@ -204,9 +204,11 @@ class XPlaneUDPServer(threading.Thread):
 		Disables the redirection of traffic received by the class to XPlane
 
 		"""
+		
 		self.RDRCT_TRAFFIC = False
 		try:
-			self.DataRCVsock.close()
+			if self.DataRCVsock is not False:
+				self.DataRCVsock.close()
 		except:
 			logger.error('Error closing redirect socket ', exc_info=True )
 
