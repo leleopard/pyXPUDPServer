@@ -424,12 +424,15 @@ class XPlaneUDPServer(threading.Thread):
 		:type value: float
 
 		"""
-
 		logger.debug('sending DREF'+dataref)
-
-		if self.XPAddress is not None:
+		val = None
+		try:
 			val = float(value)
-
+		except: 
+			val = None
+		
+		if (self.XPAddress is not None) and (val is not None):
+			
 			dataref += '['+str(index)+']'
 
 			bytesval = pack('<f',val)
@@ -443,7 +446,10 @@ class XPlaneUDPServer(threading.Thread):
 
 				self.sendSock.sendto(msg, self.XPAddress)
 		else:
-			logger.error("XPlane IP address undefined")
+			if self.XPAddress == None:
+				logger.error("XPlane IP address undefined")
+			else:
+				logger.warning("Invalid value passed for dataref, not sending to XP")
 
 
 	def registerXPCmdCallback(self, callback):
