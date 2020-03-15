@@ -475,17 +475,18 @@ class XPlaneUDPServer(threading.Thread):
 		"""
 
 		lasttimeXPbeaconreceived = time.time()
-
+		
 		while self.running:
 			current_time = time.time()
-
+			#print(self.statusMsg)
 			##---------------------------------------------------
 			#	check XPlane beacon
 			##---------------------------------------------------
 			try:
 				(msg, address) = self.mcast_sock.recvfrom(10240)
-				#logger.debug('received beacon from address '+str(address))
+				#print('received beacon from address '+str(address))
 				self.__parseXplaneBeaconPacket(msg)
+				print(self.XPbeacon)
 				if self.XPbeacon['computer_name'] == self.XPComputerName and address[0] == self.XPAddress[0]: # it seems the XPlane instance we are trying to communicate with is alive
 					lasttimeXPbeaconreceived = current_time
 					if self.XPalive == False: # if xplane was down it is now back up again, lets try and re subscribe the datarefs
@@ -626,7 +627,7 @@ class XPlaneUDPServer(threading.Thread):
 			self.XPbeacon['version_number']			= unpack('<i', packet[11:15])[0]
 			self.XPbeacon['role']					= unpack('<I', packet[15:19])[0]
 			self.XPbeacon['port']					= unpack('<H', packet[19:21])[0]
-			self.XPbeacon['computer_name']			= packet[21:len(packet)-1].decode('ascii')
+			self.XPbeacon['computer_name']			= packet[21:len(packet)-1].decode('ascii', "ignore").rstrip('\x00r')
 
 			#logger.debug (str(self.XPbeacon))
 
