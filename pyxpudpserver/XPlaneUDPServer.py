@@ -439,7 +439,8 @@ class XPlaneUDPServer(threading.Thread):
 			nr_trailing_spaces = 500-len(dataref)
 
 			msg = 'DREF0'.encode("latin_1")+bytesval+dataref.encode("latin_1")
-			msg += ' '.encode("latin_1")*nr_trailing_spaces
+			msg += '\0'.encode("latin_1")
+			msg += ' '.encode("latin_1")*(nr_trailing_spaces-1)
 			#logger.debug('UDP message: ' + msg.decode())
 			if len(msg) == 509:
 				logger.debug('sending UDP message: ' )
