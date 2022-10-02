@@ -56,7 +56,7 @@ class XPlaneUDPServer(threading.Thread):
 	def __init__(self):
 		threading.Thread.__init__(self)
 		self.running = True
-		self.updatingRREFdict = False
+		self.updatingRREFdict = threading.Lock()
 		self.statusMsg = "Not connected"
 		self.haveWeEverBeenConnectedToXP = False
 
@@ -204,7 +204,7 @@ class XPlaneUDPServer(threading.Thread):
 		Disables the redirection of traffic received by the class to XPlane
 
 		"""
-		
+
 		self.RDRCT_TRAFFIC = False
 		try:
 			if self.DataRCVsock is not False:
@@ -279,30 +279,28 @@ class XPlaneUDPServer(threading.Thread):
 
 		"""
 
-		self.updatingRREFdict = True
+		with self.updatingRREFdict:
+			if self.XPAddress is not None: # check if we have XPlane's IP, if so continue, else log an error
+				if dataref in self.datarefsDict: #  if the dataref has already been requested, then return, no need to do anything
+					logger.debug("dataref has already been requested")
+					return
+				else:
+					logger.debug("Requesting dataref %s", dataref)
+					self.datarefsDict[dataref] = 0.0	# initialise a new key for this dataref
+					index = len(self.datarefsDict)-1	# give it an index
+					self.datarefsIndices[index] = ['',None]
+					self.datarefsIndices[index][0] = dataref
 
-		if self.XPAddress is not None: # check if we have XPlane's IP, if so continue, else log an error
-			if dataref in self.datarefsDict: #  if the dataref has already been requested, then return, no need to do anything
-				logger.debug("dataref has already been requested")
-				return
-			else:
-				logger.debug("Requesting dataref %s", dataref)
-				self.datarefsDict[dataref] = 0.0	# initialise a new key for this dataref
-				index = len(self.datarefsDict)-1	# give it an index
-				self.datarefsIndices[index] = ['',None]
-				self.datarefsIndices[index][0] = dataref
+					RREF_Sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+					#RREF_Sock.setblocking(0)
+					self.datarefsIndices[index][1] = RREF_Sock
 
-				RREF_Sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-				#RREF_Sock.setblocking(0)
-				self.datarefsIndices[index][1] = RREF_Sock
+					logger.debug("datarefs Dict: %s", self.datarefsDict)
+					logger.debug("datarefs Indices: %s", self.datarefsIndices)
 
-				logger.debug("datarefs Dict: %s", self.datarefsDict)
-				logger.debug("datarefs Indices: %s", self.datarefsIndices)
+					self.RREF_sockets.append(RREF_Sock)
 
-				self.RREF_sockets.append(RREF_Sock)
-
-				self.__sendRREFmessage(index)
-		self.updatingRREFdict = False
+					self.__sendRREFmessage(index)
 
 
 	def __sendRREFmessage(self, index):
@@ -340,14 +338,15 @@ class XPlaneUDPServer(threading.Thread):
 		Private do not call - attempt to re subscribe all the RREFs previously subscribed (if XPlane was restarted for example)
 
 		"""
-		if len(self.datarefsIndices) > 0 and self.updatingRREFdict == False:
-			logger.info("Attempt to re subscribe datarefs with XPlane")
-			if PYTHON_VERSION == 2:
-				for index, RREF in self.datarefsIndices.iteritems():
-					self.__sendRREFmessage(index)
-			else:
-				for index, RREF in self.datarefsIndices.items():
-					self.__sendRREFmessage(index)
+		if len(self.datarefsIndices) > 0:
+			with self.updatingRREFdict:
+				logger.info("Attempt to re subscribe datarefs with XPlane")
+				if PYTHON_VERSION == 2:
+					for index, RREF in self.datarefsIndices.iteritems():
+						self.__sendRREFmessage(index)
+				else:
+					for index, RREF in self.datarefsIndices.items():
+						self.__sendRREFmessage(index)
 
 	def sendXPCmd(self, command, sendContinuous = False):
 		"""
@@ -428,11 +427,11 @@ class XPlaneUDPServer(threading.Thread):
 		val = None
 		try:
 			val = float(value)
-		except: 
+		except:
 			val = None
-		
+
 		if (self.XPAddress is not None) and (val is not None):
-			
+
 			dataref += '['+str(index)+']'
 
 			bytesval = pack('<f',val)
@@ -476,7 +475,7 @@ class XPlaneUDPServer(threading.Thread):
 		"""
 
 		lasttimeXPbeaconreceived = time.time()
-		
+
 		while self.running:
 			current_time = time.time()
 			#print(self.statusMsg)
@@ -535,7 +534,7 @@ class XPlaneUDPServer(threading.Thread):
 			#	Process incoming RREF dataref data
 			##---------------------------------------------------
 			try:
-				if self.updatingRREFdict == False: # to avoid having issues with dictionary iteration
+				with self.updatingRREFdict: # to avoid having issues with dictionary iteration
 
 					for index, RREF in self.datarefsIndices.items():
 						dataref = RREF[0]
@@ -545,7 +544,7 @@ class XPlaneUDPServer(threading.Thread):
 							index = unpack('<i', rrefdata[5:9])[0]
 							value = unpack('<f', rrefdata[9:13])[0]
 
-							self.datarefsDict[dataref] = value
+						self.datarefsDict[dataref] = value
 
 			except socket.error as msg: pass
 
