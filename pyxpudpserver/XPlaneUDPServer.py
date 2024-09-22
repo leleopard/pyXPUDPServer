@@ -11,7 +11,7 @@ from struct import *
 import xml.etree.ElementTree as ET
 
 logger = logging.getLogger('UDPserver')
-VERSION = "v1.2.9"
+VERSION = "v1.3"
 
 ## Python class that allows to communicate with XPlane via UDP: Set/receive datarefs, send commands; The class can also be set up to forward XPlane UDP traffic to other devices on the network, and/or redirect traffic from these devices to XPlane.
 # When importing the module, an instance of the class is created called pyXPUDPServer.
@@ -487,7 +487,7 @@ class XPlaneUDPServer(threading.Thread):
 				#print('received beacon from address '+str(address))
 				self.__parseXplaneBeaconPacket(msg)
 				#print(self.XPbeacon)
-				if self.XPbeacon['computer_name'] == self.XPComputerName and address[0] == self.XPAddress[0]: # it seems the XPlane instance we are trying to communicate with is alive
+				if self.XPbeacon['computer_name'] == self.XPComputerName: # and address[0] == self.XPAddress[0]: # it seems the XPlane instance we are trying to communicate with is alive
 					lasttimeXPbeaconreceived = current_time
 					if self.XPalive == False: # if xplane was down it is now back up again, lets try and re subscribe the datarefs
 						self.__resubscribeRREFs()
