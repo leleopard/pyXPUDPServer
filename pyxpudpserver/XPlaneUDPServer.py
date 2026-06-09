@@ -11,7 +11,7 @@ from struct import *
 import xml.etree.ElementTree as ET
 
 logger = logging.getLogger('UDPserver')
-VERSION = "v1.3"
+VERSION = "v1.4"
 
 ## Python class that allows to communicate with XPlane via UDP: Set/receive datarefs, send commands; The class can also be set up to forward XPlane UDP traffic to other devices on the network, and/or redirect traffic from these devices to XPlane.
 # When importing the module, an instance of the class is created called pyXPUDPServer.
@@ -484,9 +484,9 @@ class XPlaneUDPServer(threading.Thread):
 			##---------------------------------------------------
 			try:
 				(msg, address) = self.mcast_sock.recvfrom(10240)
-				#print('received beacon from address '+str(address))
+				logger.debug('received beacon from address %s ',str(address))
 				self.__parseXplaneBeaconPacket(msg)
-				#print(self.XPbeacon)
+				logger.debug(self.XPbeacon)
 				if self.XPbeacon['computer_name'] == self.XPComputerName: # and address[0] == self.XPAddress[0]: # it seems the XPlane instance we are trying to communicate with is alive
 					lasttimeXPbeaconreceived = current_time
 					if self.XPalive == False: # if xplane was down it is now back up again, lets try and re subscribe the datarefs
@@ -533,20 +533,17 @@ class XPlaneUDPServer(threading.Thread):
 			##---------------------------------------------------
 			#	Process incoming RREF dataref data
 			##---------------------------------------------------
-			try:
-				with self.updatingRREFdict: # to avoid having issues with dictionary iteration
-
-					for index, RREF in self.datarefsIndices.items():
-						dataref = RREF[0]
+			with self.updatingRREFdict:
+				for index, RREF in list(self.datarefsIndices.items()):
+					dataref = RREF[0]
+					try:
 						rrefdata, rrefaddr = self.datarefsIndices[index][1].recvfrom(8192)
-
 						if rrefdata[0:4].decode('ascii') == 'RREF':
-							index = unpack('<i', rrefdata[5:9])[0]
+							rx_index = unpack('<i', rrefdata[5:9])[0]
 							value = unpack('<f', rrefdata[9:13])[0]
-
-						self.datarefsDict[dataref] = value
-
-			except socket.error as msg: pass
+							self.datarefsDict[dataref] = value
+					except socket.error:
+						pass  # no data on this socket yet — try next dataref
 
 			##---------------------------------------------------
 			#	Send continuous XP Commands
