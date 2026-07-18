@@ -303,12 +303,17 @@ class XPlaneUDPServer(threading.Thread):
 					self.__sendRREFmessage(index)
 
 
-	def __sendRREFmessage(self, index):
+	def __sendRREFmessage(self, index, frequency=30):
 		"""
 		Private do not call - format and send an RREF message to XP
 
 		:param index: the index we will ask XPlane to send us the dataref with
 		:type index: int
+		:param frequency: how many times per second XPlane should send this
+			dataref. 0 tells XPlane to stop sending it (unsubscribe) - used
+			by quit() so XPlane doesn't keep pushing data to a socket we're
+			about to close.
+		:type frequency: int
 
 		"""
 		if self.XPAddress is not None:
@@ -319,7 +324,7 @@ class XPlaneUDPServer(threading.Thread):
 
 			msg = "RREF"+'\0'
 			packedindex = pack('<i', index)
-			packedfrequency = pack('<i', 30)
+			packedfrequency = pack('<i', frequency)
 			msg += packedfrequency.decode(encoding = 'latin_1')
 			msg += packedindex.decode(encoding = 'latin_1')
 			msg += dataref
@@ -604,9 +609,24 @@ class XPlaneUDPServer(threading.Thread):
 		"""
 		Call to stop the thread and close the UDP sockets
 
+		Unsubscribes every requested dataref (RREF frequency=0) before
+		closing sockets. Without this, XPlane has no idea the client has
+		gone away and keeps trying to push each dataref to its now-dead
+		local port indefinitely - across repeated connect/disconnect
+		cycles (e.g. opening and closing several panels while testing)
+		this leaves XPlane accumulating stale RREF subscriptions with no
+		way to know they're no longer wanted.
+
 		"""
 
 		self.running = False
+
+		for index in list(self.datarefsIndices.keys()):
+			try:
+				self.__sendRREFmessage(index, frequency=0)
+			except Exception:
+				logger.debug("Failed to unsubscribe dataref index %s", index, exc_info=True)
+
 		self.__closeSockets()
 
 		for index, RREF in self.datarefsIndices.items():
